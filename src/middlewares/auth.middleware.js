@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
+import { env } from '../config/env.js';
 
-const SECRET = 'supersecret';
+const SECRET = env.jwtSecret;
 
 export const authMiddleware = (req, res, next) => {
 
