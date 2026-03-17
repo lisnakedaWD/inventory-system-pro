@@ -63,11 +63,31 @@ export const refresh = async (refreshToken) => {
 
   const decoded = jwt.verify(refreshToken, SECRET);
 
-  const accessToken = jwt.sign(
+  const tokenFromDb = await repository.findRefreshToken(refreshToken);
+
+  if (!tokenFromDb) {
+    throw new Error("Invalid refresh token");
+  }
+
+  // eliminar el token antiguo
+  await repository.deleteRefreshToken(refreshToken);
+
+  const newAccessToken = jwt.sign(
     { id: decoded.id },
     SECRET,
     { expiresIn: '15m' }
   );
 
-  return { accessToken };
+  const newRefreshToken = jwt.sign(
+    { id: decoded.id },
+    SECRET,
+    { expiresIn: '7d' }
+  );
+
+  await repository.saveRefreshToken(decoded.id, newRefreshToken);
+
+  return {
+    accessToken: newAccessToken,
+    refreshToken: newRefreshToken
+  };
 };

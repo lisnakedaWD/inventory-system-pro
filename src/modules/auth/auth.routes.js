@@ -3,8 +3,8 @@ import { loginController, registerController, refreshController} from './auth.co
 
 const router = Router();
 
-router.post('/login', loginController);
 router.post('/register', registerController);
 router.post('/refresh', refreshController);
+router.post('/login', loginLimiter, loginController);
 
 export default router;
