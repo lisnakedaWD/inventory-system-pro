@@ -3,13 +3,21 @@ import { pool } from '../../database/connection.js';
 
 
 //codigo de select
-export const create = async ({ nombre, serial }) => {
+export const create = async ({ nombre, serial, tenantId }) => {
+
   const [result] = await pool.query(
-    'INSERT INTO equipos (nombre, serial, tenant_id) VALUES (?, ?, ?)',
+    `INSERT INTO equipos (nombre, serial, tenant_id)
+     VALUES (?, ?, ?)`,
     [nombre, serial, tenantId]
   );
 
-  return { id: result.insertId, nombre, serial };
+  return {
+    id: result.insertId,
+    nombre,
+    serial,
+    tenantId
+  };
+
 };
 
 //codigo de update
@@ -39,10 +47,14 @@ export const deleteById = async (id, tenantId) => {
 
 export const findAll = async ({ limit, offset, search, sort }) => {
 
+  const allowedSort = ["id", "nombre", "serial"];
+
+  const sortField = allowedSort.includes(sort) ? sort : "id";
+
   const [rows] = await pool.query(
     `SELECT * FROM equipos
      WHERE nombre LIKE ?
-     ORDER BY ${sort}
+     ORDER BY ${sortField}
      LIMIT ? OFFSET ?`,
     [`%${search}%`, limit, offset]
   );
@@ -64,15 +76,3 @@ export const countAll = async (search) => {
 
 };
 
-//codigo busqueda
-
-export const searchInventory = async (search) => {
-
-  const [rows] = await pool.query(
-    `SELECT * FROM equipos
-     WHERE nombre LIKE ?`,
-    [`%${search}%`]
-  );
-
-  return rows;
-};
