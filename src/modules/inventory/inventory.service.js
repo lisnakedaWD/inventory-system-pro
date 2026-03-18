@@ -47,3 +47,31 @@ export const deleteInventory = async (id, user) => {
 
   return { message: 'Inventory deleted successfully' };
 };
+
+//codigo paginación 
+
+export const getInventory = async ({ page, limit, search, sort }) => {
+
+  const offset = (page - 1) * limit;
+
+  const items = await repository.findAll({
+    limit,
+    offset,
+    search,
+    sort
+  });
+
+  const total = await repository.countAll(search);
+
+  const pages = Math.ceil(total / limit);
+
+  return {
+    items,
+    meta: {
+      page,
+      limit,
+      total,
+      pages
+    }
+  };
+};

@@ -2,15 +2,8 @@ import { findAll } from './inventory.repository.js';
 import { createInventory } from './inventory.service.js';
 import { updateInventory } from './inventory.service.js';
 import { deleteInventory } from './inventory.service.js';
+import * as service from './inventory.service.js';
 
-export const getInventory = async (req, res) => {
-  try {
-    const data = await findAll();
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 //codigo de select
 export const create = async (req, res, next) => {
@@ -58,6 +51,34 @@ export const remove = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: result
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+//codigo paginación
+
+export const getInventory = async (req, res, next) => {
+  try {
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const sort = req.query.sort || 'id';
+
+      const result = await service.getInventory({
+      page,
+      limit,
+      search,
+      sort
+    });
+
+    res.json({
+      success: true,
+      data: result.items,
+      meta: result.meta
     });
 
   } catch (error) {

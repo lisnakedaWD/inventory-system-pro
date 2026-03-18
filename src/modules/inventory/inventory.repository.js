@@ -1,9 +1,6 @@
 import { pool } from '../../database/connection.js';
 
-export const findAll = async () => {
-  const [rows] = await pool.query('SELECT * FROM equipos');
-  return rows;
-};
+
 
 //codigo de select
 export const create = async ({ nombre, serial }) => {
@@ -36,4 +33,46 @@ export const deleteById = async (id, tenantId) => {
   );
 
   return result.affectedRows;
+};
+
+//codigo paginación
+
+export const findAll = async ({ limit, offset, search, sort }) => {
+
+  const [rows] = await pool.query(
+    `SELECT * FROM equipos
+     WHERE nombre LIKE ?
+     ORDER BY ${sort}
+     LIMIT ? OFFSET ?`,
+    [`%${search}%`, limit, offset]
+  );
+
+  return rows;
+
+};
+
+export const countAll = async (search) => {
+
+  const [rows] = await pool.query(
+    `SELECT COUNT(*) as total
+     FROM equipos
+     WHERE nombre LIKE ?`,
+    [`%${search}%`]
+  );
+
+  return rows[0].total;
+
+};
+
+//codigo busqueda
+
+export const searchInventory = async (search) => {
+
+  const [rows] = await pool.query(
+    `SELECT * FROM equipos
+     WHERE nombre LIKE ?`,
+    [`%${search}%`]
+  );
+
+  return rows;
 };
