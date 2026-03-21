@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import * as repository from './auth.repository.js';
 import { env } from '../../config/env.js';
+import { UnauthorizedError } from "../../errors/errors.js";
 
 const SECRET = env.jwtSecret;
 
@@ -10,13 +11,13 @@ export const login = async (email, password) => {
   const user = await repository.findByEmail(email);
 
   if (!user) {
-    throw new Error('Invalid credentials');
+    throw new UnauthorizedError('Invalid credentials');
   }
 
   const match = await bcrypt.compare(password, user.password);
 
   if (!match) {
-    throw new Error('Invalid credentials');
+    throw new UnauthorizedError('Invalid credentials');
   }
 
   const accessToken = jwt.sign(
@@ -58,7 +59,7 @@ export const register = async (email, password, role, tenantId) => {
 export const refresh = async (refreshToken) => {
 
   if (!refreshToken) {
-    throw new Error("Refresh token required");
+    throw new UnauthorizedError("Refresh token required");
   }
 
   const decoded = jwt.verify(refreshToken, SECRET);
@@ -66,7 +67,7 @@ export const refresh = async (refreshToken) => {
   const tokenFromDb = await repository.findRefreshToken(refreshToken);
 
   if (!tokenFromDb) {
-    throw new Error("Invalid refresh token");
+    throw new UnauthorizedError("Invalid refresh token");
   }
 
   // eliminar el token antiguo

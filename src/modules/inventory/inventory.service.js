@@ -1,8 +1,9 @@
 import * as repository from './inventory.repository.js';
+import { UnauthorizedError } from "../../errors/errors.js";
 
 export const createInventory = async (data) => {
   if (!data.nombre || !data.serial) {
-    throw new Error('Nombre and serial are required');
+    throw new UnauthorizedError('Nombre and serial are required');
   }
 
 //codigo de select
@@ -13,7 +14,7 @@ export const createInventory = async (data) => {
 export const updateInventory = async (id, user, data) => {
 
   if (user.role !== 'admin') {
-    throw new Error('Only admins can update inventory');
+    throw new UnauthorizedError('Only admins can update inventory');
   }
 
   const affected = await repository.updateById(
@@ -23,7 +24,7 @@ export const updateInventory = async (id, user, data) => {
   );
 
   if (affected === 0) {
-    throw new Error('Not found or not allowed');
+    throw new UnauthorizedError('Not found or not allowed');
   }
 
   return { message: 'Inventory updated successfully' };
@@ -33,7 +34,7 @@ export const updateInventory = async (id, user, data) => {
 export const deleteInventory = async (id, user) => {
 
   if (user.role !== 'admin') {
-    throw new Error('Only admins can delete inventory');
+    throw new UnauthorizedError('Only admins can delete inventory');
   }
 
   const affected = await repository.deleteById(
@@ -42,7 +43,7 @@ export const deleteInventory = async (id, user) => {
   );
 
   if (affected === 0) {
-    throw new Error('Not found or not allowed');
+    throw new UnauthorizedError('Not found or not allowed');
   }
 
   return { message: 'Inventory deleted successfully' };

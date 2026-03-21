@@ -63,6 +63,8 @@ export const findAll = async ({ limit, offset, search, sort }) => {
 
 };
 
+//codigo count
+
 export const countAll = async (search) => {
 
   const [rows] = await pool.query(
