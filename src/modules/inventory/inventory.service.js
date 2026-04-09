@@ -2,13 +2,16 @@ import * as repository from './inventory.repository.js';
 import { UnauthorizedError } from "../../errors/errors.js";
 import { redisClient } from "../../config/redis.js";
 
-export const createInventory = async (data) => {
+export const createInventory = async (data, user) => {
   if (!data.nombre || !data.serial) {
     throw new UnauthorizedError('Nombre and serial are required');
   }
 
-//codigo de select
-  return await repository.create(data, user.tenantId);
+  return await repository.create({
+    nombre: data.nombre,
+    serial: data.serial,
+    tenantId: user.tenantId
+  });
 };
 
 //codigo de update
@@ -52,29 +55,27 @@ export const deleteInventory = async (id, user) => {
 
 //codigo paginación y cache
 
-export const getInventory = async ({ page, limit, search, sort }) => {
+export const getInventory = async ({ page, limit, search, sort }, user) => {
 
-  const cacheKey = `inventory:${page}:${limit}:${search}:${sort}`;
+  const cacheKey = `inventory:${user.tenantId}:${page}:${limit}:${search}:${sort}`;
 
-  // Buscar en cache
   const cached = await redisClient.get(cacheKey);
 
   if (cached) {
-    console.log("⚡ Data from cache");
     return JSON.parse(cached);
   }
 
-  // Si no está, consultar DB
   const offset = (page - 1) * limit;
 
   const items = await repository.findAll({
     limit,
     offset,
     search,
-    sort
+    sort,
+    tenantId: user.tenantId
   });
 
-  const total = await repository.countAll(search);
+  const total = await repository.countAll(search, user.tenantId);
   const pages = Math.ceil(total / limit);
 
   const result = {
@@ -82,10 +83,7 @@ export const getInventory = async ({ page, limit, search, sort }) => {
     meta: { page, limit, total, pages }
   };
 
-  // Guardar en cache (60 segundos)
   await redisClient.setEx(cacheKey, 60, JSON.stringify(result));
-
-  console.log("💾 Data from DB and cached");
 
   return result;
 };

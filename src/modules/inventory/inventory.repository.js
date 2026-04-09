@@ -45,36 +45,33 @@ export const deleteById = async (id, tenantId) => {
 
 //codigo paginación
 
-export const findAll = async ({ limit, offset, search, sort }) => {
+export const findAll = async ({ limit, offset, search, sort, tenantId }) => {
 
   const allowedSort = ["id", "nombre", "serial"];
-
   const sortField = allowedSort.includes(sort) ? sort : "id";
 
   const [rows] = await pool.query(
     `SELECT * FROM equipos
-     WHERE nombre LIKE ?
+     WHERE nombre LIKE ? AND tenant_id = ?
      ORDER BY ${sortField}
      LIMIT ? OFFSET ?`,
-    [`%${search}%`, limit, offset]
+    [`%${search}%`, tenantId, limit, offset]
   );
 
   return rows;
-
 };
 
 //codigo count
 
-export const countAll = async (search) => {
+export const countAll = async (search, tenantId) => {
 
   const [rows] = await pool.query(
     `SELECT COUNT(*) as total
      FROM equipos
-     WHERE nombre LIKE ?`,
-    [`%${search}%`]
+     WHERE nombre LIKE ? AND tenant_id = ?`,
+    [`%${search}%`, tenantId]
   );
 
   return rows[0].total;
-
 };
 

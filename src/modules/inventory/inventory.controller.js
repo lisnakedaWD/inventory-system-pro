@@ -1,14 +1,9 @@
-import { findAll } from './inventory.repository.js';
-import { createInventory } from './inventory.service.js';
-import { updateInventory } from './inventory.service.js';
-import { deleteInventory } from './inventory.service.js';
 import * as service from './inventory.service.js';
 
-
-//codigo de select
-export const create = async (req, res, next) => {
+// CREATE
+export const createInventory = async (req, res, next) => {
   try {
-    const result = await createInventory(req.body);
+    const result = await service.createInventory(req.body, req.user);
 
     res.status(201).json({
       success: true,
@@ -20,10 +15,10 @@ export const create = async (req, res, next) => {
   }
 };
 
-//codigo de update
-export const update = async (req, res, next) => {
+// UPDATE
+export const updateInventory = async (req, res, next) => {
   try {
-    const result = await updateInventory(
+    const result = await service.updateInventory(
       req.params.id,
       req.user,
       req.body
@@ -39,11 +34,10 @@ export const update = async (req, res, next) => {
   }
 };
 
-
-//codigo de delete
-export const remove = async (req, res, next) => {
+// DELETE
+export const deleteInventory = async (req, res, next) => {
   try {
-    const result = await deleteInventory(
+    const result = await service.deleteInventory(
       req.params.id,
       req.user
     );
@@ -58,8 +52,7 @@ export const remove = async (req, res, next) => {
   }
 };
 
-//codigo paginación
-
+// GET
 export const getInventory = async (req, res, next) => {
   try {
 
@@ -68,12 +61,12 @@ export const getInventory = async (req, res, next) => {
     const search = req.query.search || '';
     const sort = req.query.sort || 'id';
 
-      const result = await service.getInventory({
-      page,
-      limit,
-      search,
-      sort
-    });
+   const result = await service.getInventory({
+  page,
+  limit,
+  search,
+  sort
+}, req.user);
 
     res.json({
       success: true,
