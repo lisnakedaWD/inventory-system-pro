@@ -44,14 +44,14 @@ export const login = async (email, password) => {
   };
 };
 
-export const register = async (email, password, role, tenantId) => {
+export const register = async (email, password, role = "user", tenantId) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
   return await repository.createUser({
     email,
     password: hashedPassword,
-    role,
+    role: "user", // 🔥 forzado
     tenantId
   });
 };
@@ -70,22 +70,33 @@ export const refresh = async (refreshToken) => {
     throw new UnauthorizedError("Invalid refresh token");
   }
 
-  // eliminar el token antiguo
+  // 🔥 obtener usuario real
+  const user = await repository.findById(decoded.id);
+
+  if (!user) {
+    throw new UnauthorizedError("User not found");
+  }
+
+  // eliminar token viejo
   await repository.deleteRefreshToken(refreshToken);
 
   const newAccessToken = jwt.sign(
-    { id: decoded.id },
+    {
+      id: user.id,
+      role: user.role,
+      tenantId: user.tenant_id
+    },
     SECRET,
     { expiresIn: '15m' }
   );
 
   const newRefreshToken = jwt.sign(
-    { id: decoded.id },
+    { id: user.id },
     SECRET,
     { expiresIn: '7d' }
   );
 
-  await repository.saveRefreshToken(decoded.id, newRefreshToken);
+  await repository.saveRefreshToken(user.id, newRefreshToken);
 
   return {
     accessToken: newAccessToken,

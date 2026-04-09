@@ -17,7 +17,11 @@ export const loginController = async (req, res, next) => {
 
 export const registerController = async (req, res, next) => {
   try {
-    const { email, password, role, tenantId } = req.body;
+    const { email, password } = req.body;
+
+    // 🔥 NO permitir que el cliente defina esto
+    const role = "user";
+    const tenantId = req.user?.tenantId || 1; // o lógica controlada
 
     const result = await register(email, password, role, tenantId);
 
