@@ -22,22 +22,29 @@ export const create = async ({ nombre, serial, tenantId }) => {
 
 //codigo de update
 export const updateById = async (id, tenantId, data) => {
+
+  const fields = [];
+  const values = [];
+
+  if (data.nombre !== undefined) {
+    fields.push("nombre = ?");
+    values.push(data.nombre);
+  }
+
+  if (data.serial !== undefined) {
+    fields.push("serial = ?");
+    values.push(data.serial);
+  }
+
+  if (fields.length === 0) return 0;
+
+  values.push(id, tenantId);
+
   const [result] = await pool.query(
     `UPDATE equipos 
-     SET nombre = ?, serial = ?
+     SET ${fields.join(", ")}
      WHERE id = ? AND tenant_id = ?`,
-    [data.nombre, data.serial, id, tenantId]
-  );
-
-  return result.affectedRows;
-};
-
-//codigo de delete
-export const deleteById = async (id, tenantId) => {
-  const [result] = await pool.query(
-    `DELETE FROM equipos 
-     WHERE id = ? AND tenant_id = ?`,
-    [id, tenantId]
+    values
   );
 
   return result.affectedRows;
@@ -75,3 +82,13 @@ export const countAll = async (search, tenantId) => {
   return rows[0].total;
 };
 
+export const findById = async (id, tenantId) => {
+
+  const [rows] = await pool.query(
+    `SELECT * FROM equipos 
+     WHERE id = ? AND tenant_id = ?`,
+    [id, tenantId]
+  );
+
+  return rows[0] || null;
+};
